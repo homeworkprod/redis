@@ -621,7 +621,7 @@ class Redis(object):
         [u'aaa', u'bbb', u'ccc', u'ddd']
         >>> r.delete('l')
         1
-        >>> for i in range(1, 5):
+        >>> for i in xrange(1, 5):
         ...     res = r.push('l', 1.0 / i)
         >>> r.sort('l')
         [Decimal("0.25"), Decimal("0.333333333333"), Decimal("0.5"), Decimal("1.0")]
@@ -648,15 +648,14 @@ class Redis(object):
             stmt.append('BY %s' % by)
         if start and num:
             stmt.append('LIMIT %s %s' % (start, num))
-        if get is None:
-            pass
-        elif isinstance(get, basestring):
-            stmt.append('GET %s' % get)
-        elif isinstance(get, list) or isinstance(get, tuple):
-            for g in get:
-                stmt.append('GET %s' % g)
-        else:
-            raise RedisError("Invalid parameter 'get' for Redis sort")
+        if get is not None:
+            if isinstance(get, basestring):
+                stmt.append('GET %s' % get)
+            elif isinstance(get, (tuple, list)):
+                for g in get:
+                    stmt.append('GET %s' % g)
+            else:
+                raise RedisError("Invalid parameter 'get' for Redis sort")
         if desc:
             stmt.append('DESC')
         if alpha:
@@ -984,10 +983,7 @@ class Redis(object):
                 num = int(data[1:])
             except (TypeError, ValueError):
                 raise InvalidResponse("Cannot convert multi-response header '%s' to integer" % data)
-            result = list()
-            for i in range(num):
-                result.append(self._get_value())
-            return result
+            return [self._get_value() for i in xrange(num)]
         return self._get_value(data)
 
     def _get_value(self, data=None):

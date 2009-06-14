@@ -135,7 +135,7 @@ class Redis(object):
         else:
             command = 'SET'
         value = self._encode(value)
-        self._write('%s %s %s\r\n%s\r\n' % (
+        self._write('%s %s %d\r\n%s\r\n' % (
                 command, name, len(value), value
             ))
         return self.get_response()
@@ -205,7 +205,7 @@ class Redis(object):
         if amount == 1:
             self._write('INCR %s\r\n' % name)
         else:
-            self._write('INCRBY %s %s\r\n' % (name, amount))
+            self._write('INCRBY %s %d\r\n' % (name, amount))
         return self.get_response()
 
     def decr(self, name, amount=1):
@@ -228,7 +228,7 @@ class Redis(object):
         if amount == 1:
             self._write('DECR %s\r\n' % name)
         else:
-            self._write('DECRBY %s %s\r\n' % (name, amount))
+            self._write('DECRBY %s %d\r\n' % (name, amount))
         return self.get_response()
 
     def exists(self, name):
@@ -374,7 +374,7 @@ class Redis(object):
         self._write('TTL %s\r\n' % name)
         return self.get_response()
 
-    def expire(self, name, time):
+    def expire(self, name, seconds):
         """
         >>> r = Redis(db=9)
         >>> r.set('a', 1)
@@ -386,7 +386,7 @@ class Redis(object):
         >>>
         """
         self.connect()
-        self._write('EXPIRE %s %s\r\n' % (name, time))
+        self._write('EXPIRE %s %d\r\n' % (name, seconds))
         return self.get_response()
 
     def push(self, name, value, tail=False):
@@ -407,7 +407,7 @@ class Redis(object):
         """
         self.connect()
         value = self._encode(value)
-        self._write('%s %s %s\r\n%s\r\n' % (
+        self._write('%s %s %d\r\n%s\r\n' % (
             'LPUSH' if tail else 'RPUSH', name, len(value), value
         ))
         return self.get_response()
@@ -455,7 +455,7 @@ class Redis(object):
         >>>
         """
         self.connect()
-        self._write('LRANGE %s %s %s\r\n' % (name, start, end))
+        self._write('LRANGE %s %d %d\r\n' % (name, start, end))
         return self.get_response()
 
     def ltrim(self, name, start, end):
@@ -485,7 +485,7 @@ class Redis(object):
         >>>
         """
         self.connect()
-        self._write('LTRIM %s %s %s\r\n' % (name, start, end))
+        self._write('LTRIM %s %d %d\r\n' % (name, start, end))
         return self.get_response()
 
     def lindex(self, name, index):
@@ -507,7 +507,7 @@ class Redis(object):
         >>>
         """
         self.connect()
-        self._write('LINDEX %s %s\r\n' % (name, index))
+        self._write('LINDEX %s %d\r\n' % (name, index))
         return self.get_response()
 
     def pop(self, name, tail=False):
@@ -565,7 +565,7 @@ class Redis(object):
         """
         self.connect()
         value = self._encode(value)
-        self._write('LSET %s %s %s\r\n%s\r\n' % (
+        self._write('LSET %s %d %d\r\n%s\r\n' % (
             name, index, len(value), value
         ))
         return self.get_response()
@@ -599,7 +599,7 @@ class Redis(object):
         """
         self.connect()
         value = self._encode(value)
-        self._write('LREM %s %s %s\r\n%s\r\n' % (
+        self._write('LREM %s %d %d\r\n%s\r\n' % (
             name, num, len(value), value
         ))
         return self.get_response()
@@ -647,7 +647,7 @@ class Redis(object):
         if by:
             stmt.append('BY %s' % by)
         if start and num:
-            stmt.append('LIMIT %s %s' % (start, num))
+            stmt.append('LIMIT %d %d' % (start, num))
         if get is not None:
             if isinstance(get, basestring):
                 stmt.append('GET %s' % get)
@@ -676,7 +676,7 @@ class Redis(object):
         """
         self.connect()
         value = self._encode(value)
-        self._write('SADD %s %s\r\n%s\r\n' % (
+        self._write('SADD %s %d\r\n%s\r\n' % (
             name, len(value), value
         ))
         return self.get_response()
@@ -698,7 +698,7 @@ class Redis(object):
         """
         self.connect()
         value = self._encode(value)
-        self._write('SREM %s %s\r\n%s\r\n' % (
+        self._write('SREM %s %d\r\n%s\r\n' % (
             name, len(value), value
         ))
         return self.get_response()
@@ -720,7 +720,7 @@ class Redis(object):
         """
         self.connect()
         value = self._encode(value)
-        self._write('SISMEMBER %s %s\r\n%s\r\n' % (
+        self._write('SISMEMBER %s %d\r\n%s\r\n' % (
             name, len(value), value
         ))
         return self.get_response()
@@ -864,7 +864,7 @@ class Redis(object):
         >>>
         """
         self.connect()
-        self._write('SELECT %s\r\n' % db)
+        self._write('SELECT %d\r\n' % db)
         return self.get_response()
 
     def move(self, name, db):
@@ -893,7 +893,7 @@ class Redis(object):
         >>>
         """
         self.connect()
-        self._write('MOVE %s %s\r\n' % (name, db))
+        self._write('MOVE %s %d\r\n' % (name, db))
         return self.get_response()
 
     def save(self, background=False):

@@ -32,7 +32,6 @@ class RedisError(Exception): pass
 class ConnectionError(RedisError): pass
 class ResponseError(RedisError): pass
 class InvalidResponse(RedisError): pass
-class InvalidData(RedisError): pass
 
 
 class Redis(object):
@@ -51,15 +50,12 @@ class Redis(object):
         self._fp = None
         self.db = db
 
-    def _encode(self, s):
-        if isinstance(s, str):
-            return s
-        if isinstance(s, unicode):
-            try:
-                return s.encode(self.charset, self.errors)
-            except UnicodeEncodeError, e:
-                raise InvalidData("Error encoding unicode value '%s': %s" % (value.encode(self.charset, 'replace'), e))
-        return str(s)
+    def _encode(self, value):
+        if not isinstance(value, unicode):
+            if not isinstance(value, str):
+                value = str(value)
+            value = unicode(value, self.charset, self.errors)
+        return value.encode(self.charset, self.errors)
 
     def _write(self, s):
         """

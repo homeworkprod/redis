@@ -21,7 +21,6 @@ __date__ = "$LastChangedDate: 2009-03-17 16:15:55 +0100 (Mar, 17 Mar 2009) $"[18
 # TODO: Redis._get_multi_response
 
 
-import decimal
 import errno
 import socket
 
@@ -121,7 +120,7 @@ class Redis(object):
         >>> r.set('b', 'xxx', preserve=True)
         0
         >>> r.get('b')
-        Decimal("105.2")
+        u'105.2'
         >>>
         """
         self.connect()
@@ -148,11 +147,11 @@ class Redis(object):
         >>> r.get('a')
         u'pippo'
         >>> r.get('b')
-        15
+        u'15'
         >>> r.get('d')
         u'\\r\\n'
         >>> r.get('b')
-        15
+        u'15'
         >>> r.get('c')
         u' \\r\\naaa\\nbbb\\r\\ncccc\\nddd\\r\\n '
         >>> r.get('c')
@@ -181,7 +180,7 @@ class Redis(object):
         >>> r.set('a', 'pippo'), r.set('b', 15), r.set('c', '\\r\\naaa\\nbbb\\r\\ncccc\\nddd\\r\\n'), r.set('d', '\\r\\n')
         ('OK', 'OK', 'OK', 'OK')
         >>> r.mget('a', 'b', 'c', 'd')
-        [u'pippo', 15, u'\\r\\naaa\\nbbb\\r\\ncccc\\nddd\\r\\n', u'\\r\\n']
+        [u'pippo', u'15', u'\\r\\naaa\\nbbb\\r\\ncccc\\nddd\\r\\n', u'\\r\\n']
         >>>
         """
         self.connect()
@@ -624,21 +623,21 @@ class Redis(object):
         >>> for i in xrange(1, 5):
         ...     res = r.push('l', 1.0 / i)
         >>> r.sort('l')
-        [Decimal("0.25"), Decimal("0.333333333333"), Decimal("0.5"), Decimal("1.0")]
+        [u'0.25', u'0.333333333333', u'0.5', u'1.0']
         >>> r.sort('l', desc=True)
-        [Decimal("1.0"), Decimal("0.5"), Decimal("0.333333333333"), Decimal("0.25")]
+        [u'1.0', u'0.5', u'0.333333333333', u'0.25']
         >>> r.sort('l', desc=True, start=2, num=1)
-        [Decimal("0.333333333333")]
+        [u'0.333333333333']
         >>> r.set('weight_0.5', 10)
         'OK'
         >>> r.sort('l', desc=True, by='weight_*')
-        [Decimal("0.5"), Decimal("1.0"), Decimal("0.333333333333"), Decimal("0.25")]
+        [u'0.5', u'1.0', u'0.333333333333', u'0.25']
         >>> for i in r.sort('l', desc=True):
         ...     res = r.set('test_%s' % i, 100 - float(i))
         >>> r.sort('l', desc=True, get='test_*')
-        [Decimal("99.0"), Decimal("99.5"), Decimal("99.6666666667"), Decimal("99.75")]
+        [u'99.0', u'99.5', u'99.6666666667', u'99.75']
         >>> r.sort('l', desc=True, by='weight_*', get='test_*')
-        [Decimal("99.5"), Decimal("99.0"), Decimal("99.6666666667"), Decimal("99.75")]
+        [u'99.5', u'99.0', u'99.6666666667', u'99.75']
         >>> r.sort('l', desc=True, by='weight_*', get='missing_*')
         [None, None, None, None]
         >>>
@@ -1006,10 +1005,7 @@ class Redis(object):
             if i < 0:
                 break
         data = ''.join(buf)[:-2]
-        try:
-            return int(data) if data.find('.') == -1 else decimal.Decimal(data)
-        except (ValueError, decimal.InvalidOperation):
-            return data.decode(self.charset)
+        return data.decode(self.charset)
 
     def disconnect(self):
         if isinstance(self._sock, socket.socket):
